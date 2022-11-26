@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+    <head>
+        <meta viewport content="width=device-width, initial-scale=1" />
+        <style>
+            body {
+                margin: 0;
+                background: #000;
+                overflow: hidden;
+            }
+
+            #viewport {
+                height: 100vh;
+                width: 100vw;
+            }
+        </style>
+        <script>
+            let viewport;
+            let ctx;
+            let sizeVariant = 4;
+            let max = window.innerHeight * window.innerWidth / 2;
+            let horizon;
+            const snow = [];
+            function init() {
+                viewport = document.querySelector("#viewport");
+                viewport.height = window.innerHeight;
+                viewport.width = window.innerWidth;
+                horizon = Math.round(viewport.height);
+                ctx = viewport.getContext("2d");
+                setInterval(draw, 100);
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, viewport.width, viewport.height);
+                //drawScenery();
+                drawSky();
+                createSnow(3);
+                snowfall(2);
+                fillSnow();
+            }
+            function drawScenery() {
+                // Create gradient
+                const gradient = ctx.createLinearGradient(
+                    Math.round(viewport.width / 2), 
+                    horizon, 
+                    Math.round(viewport.width / 2), 
+                    viewport.height
+                );
+
+                gradient.addColorStop(0, "#222");
+                gradient.addColorStop(1, "#111");
+
+                // Set the fill style and draw a rectangle
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    0,
+                    horizon,
+                    viewport.width,
+                    viewport.height
+                );
+            }
+
+            function drawSky() {
+                // Create gradient
+                const gradient = ctx.createLinearGradient(
+                    Math.round(viewport.width / 2), 
+                    horizon,
+                    Math.round(viewport.width / 2), 
+                    0
+                );
+
+                // Add three color stops
+                gradient.addColorStop(0, "#081828");
+                gradient.addColorStop(1, "#080f18");
+
+                // Set the fill style and draw a rectangle
+                ctx.fillStyle = gradient;
+                ctx.fillRect(
+                    0,
+                    0,
+                    viewport.width,
+                    horizon
+                );
+            }
+
+            function createSnow(amount) {
+                if (snow.length < max) { 
+                    const size = Math.round(Math.random() * sizeVariant);
+                    let alpha = Math.round(Math.random() * 100) / 100;
+                    
+                    for (let i = 0; i < amount; i++) {
+                        snow.push({
+                            x: Math.round(Math.random() * viewport.width),
+                            y: 0,
+                            r: 255,
+                            g: 255,
+                            b: 255,
+                            a: alpha,
+                            size: Math.round(Math.random() * sizeVariant),
+                            xDirection: Math.round(Math.random()) * (Math.round(Math.random()) ? -1 : 1)
+                        });
+                    }
+                }
+            }
+
+            function snowfall(speed) {
+                snow.forEach(function(snowflake, index, snow) {
+                    if (Math.round(Math.random() * 50) == 0) {
+                        snowflake.xDirection *= -1; 
+                    }
+                    let ySpeed = speed;
+                    snowflake.x += snowflake.xDirection;
+                    snowflake.y += snowflake.size * ySpeed;
+
+                    snowflake.a -= Math.round(Math.random()) / 500;
+
+                    if (snowflake.y >= viewport.height
+                        || snowflake.a < 0) {
+                        snow = snow.splice(index, 1);
+                    }
+                });
+            }
+
+            function fillSnow() {
+                snow.forEach(snowflake => {
+                    ctx.fillStyle = "rgba(" + snowflake.r + ", " + snowflake.g + ", " + snowflake.b + ", " + snowflake.a + ")";
+                    ctx.fillRect(snowflake.x, snowflake.y, snowflake.size, snowflake.size);
+                });
+            }
+
+            function distance(a, b) {
+                return Math.round(Math.max(a, b) - Math.min(a, b));
+            }
+
+            window.onload = init;
+        </script>
+    </head>
+    <body>
+        <canvas id="viewport">
+        </canvas>
+    </body>
+</html>
